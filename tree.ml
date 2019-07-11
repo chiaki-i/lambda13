@@ -1,6 +1,7 @@
 (* 木の型 *)
-type 'a tree_t = Empty
-	       | Node of 'a tree_t * 'a * 'a tree_t
+type 'a tree_t =
+  | Empty
+  | Node of 'a tree_t * 'a * 'a tree_t
 
 (* sum1 : int tree の要素の合計を返す *)
 let rec sum1 (tree : int tree_t) : int = match tree with
@@ -8,8 +9,9 @@ let rec sum1 (tree : int tree_t) : int = match tree with
   | Node (left, value, right) -> (sum1 left) + value + (sum1 right)
 
 (* sum2 : 要素が負または 0 のとき Error 、それ以外は Success を返す *)
-type 'a error_t = Error of string
-		| Success of 'a
+type 'a error_t =
+  | Error of string
+  | Success of 'a
 
 let rec sum2 (tree : int tree_t) : int error_t = match tree with
   | Empty -> Success 0
@@ -22,7 +24,7 @@ let rec sum2 (tree : int tree_t) : int error_t = match tree with
       | (Error s, _) -> Error s
       | (Success _, Error s) -> Error s
 
-(* sum3 : 履歴を持ち歩き、同じ数字は加算しない *)
+(* sum3 : 履歴を持ち歩き、同じ数字は加算しない。(左, 値, 右) の順に読む *)
 (* デバッグ用 *)
 let rec print_lst (lst : int list) : unit = match lst with
   | [] -> print_string "]"
@@ -52,6 +54,13 @@ let rec sum4 (tree : int list tree_t) : int list = match tree with
     let left_lst = sum4 left in
     let middle_lst = power_sum lst left_lst in
     power_sum middle_lst (sum4 right)
+
+let rec sum4' (tree : int list tree_t) : int list = match tree with
+  | Empty -> [0]
+  | Node (left, lst, right) ->
+    let left_lst = sum4' left in
+    let f lst1 lst2 = List.concat (List.map (fun x -> List.map (fun y -> y + x) lst1) lst2) in
+    f (sum4' right) (f lst left_lst)
 
 (* 例 *)
 let tree1 =
@@ -84,3 +93,4 @@ let power_sum_test1 = power_sum [1] [2; 3] = [3; 4]
 let power_sum_test2 = power_sum [4; 5] [4; 6] = [8; 10; 9; 11]
 
 let sum4_test1 = sum4 tree3 = [12; 14; 13; 15]
+let sum4'_test1 = sum4' tree3 = [12; 14; 13; 15]
